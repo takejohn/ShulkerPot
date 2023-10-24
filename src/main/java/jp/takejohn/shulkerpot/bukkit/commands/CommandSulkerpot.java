@@ -19,26 +19,32 @@ public class CommandSulkerpot implements CommandExecutor {
             return false;
         }
         if (args.length == 0) {
-            final boolean enabled = ShulkerPot.getPlugin().getUtilizingConfig().get(player);
-            if (enabled) {
-                player.sendMessage("ShulkerPot is enabled for you.");
-            } else {
-                player.sendMessage("ShulkerPot is disabled for you.");
-            }
+            sendInformingMessage(player);
             return true;
         }
         if (args.length == 1) {
             final String arg = args[0];
             if (arg.equals("on")) {
                 ShulkerPot.getPlugin().getUtilizingConfig().set(player, true);
+                sendInformingMessage(player);
                 return true;
             } else if (arg.equals("off")) {
                 ShulkerPot.getPlugin().getUtilizingConfig().set(player, false);
+                sendInformingMessage(player);
                 return true;
             }
         }
         player.sendMessage(MessageFormat.format("Try \"{0}\", \"{0} on\", or \"{0} off\"", label));
         return false;
+    }
+
+    private void sendInformingMessage(@NotNull Player player) {
+        final boolean enabled = ShulkerPot.getPlugin().getUtilizingConfig().get(player);
+        if (enabled) {
+            player.sendMessage("ShulkerPot is enabled for you.");
+        } else {
+            player.sendMessage("ShulkerPot is disabled for you.");
+        }
     }
 
 }
