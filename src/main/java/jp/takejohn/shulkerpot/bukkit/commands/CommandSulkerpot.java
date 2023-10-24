@@ -25,6 +25,7 @@ public class CommandSulkerpot implements CommandExecutor {
             } else {
                 player.sendMessage("ShulkerPot is disabled for you.");
             }
+            return true;
         }
         if (args.length == 1) {
             final String arg = args[0];
