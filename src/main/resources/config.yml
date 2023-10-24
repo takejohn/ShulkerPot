@@ -1,0 +1,7 @@
+# ShulkerPot Configuration File
+
+shulkerpot:
+
+  # When this is set to true, a player can open a shulker box by simply clicking it in their inventory.
+  # Setting this to false makes players need to execute "/shulkerpot on" to use this function.
+  default: true

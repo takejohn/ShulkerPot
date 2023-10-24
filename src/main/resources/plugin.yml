@@ -1,0 +1,30 @@
+name: ShulkerPot
+version: '${version}'
+description: A simple plugin to open shulker boxes without placing them.
+authors: [Take-John]
+website: https://github.com/takejohn/ShulkerPot
+main: jp.takejohn.shulkerpot.bukkit.ShulkerPot
+api-version: '1.18'
+commands:
+  shulkerpot:
+    description: Main command of ShulkerPot.
+    aliases: [sp]
+    permission: shulkerpot.shulkerpot
+    permission-message: You cannot execute /shulkerpot command!
+    usage: /<command> [on|off]
+  sopen:
+    description: Opens a shulker box in the main hand.
+    permission: shukerpot.sopen
+    permission-message: You cannot execute /sopen command!
+permissions:
+  shulkerpot.*:
+    default: op
+    children:
+      shulkerpot.shulkerpot: true
+      shulkerpot.sopen: true
+  shulkerpot.shulkerpot:
+    description: Allows /shulkerpot command.
+    default: true
+  shulkerpot.sopen:
+    description: Allows /sopen command.
+    default: true
