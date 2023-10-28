@@ -147,8 +147,7 @@ public class ShulkerBoxInventoryAdapter {
     }
 
     private void close() {
-        onClose();
-        opener.closeInventory();
+        opener.closeInventory();  // This method calls InventoryCloseEvent
     }
 
     private void onClose() {
