@@ -135,9 +135,6 @@ public class ShulkerBoxInventoryAdapter {
      * @param shulkerBoxItem The shulker box as an item
      */
     public static void open(@NotNull Player player, @NotNull ItemStack shulkerBoxItem) {
-        if (Objects.requireNonNull(shulkerBoxItem.getItemMeta()).getPersistentDataContainer().get(KEY, DATA_TYPE) != null) {
-            throw new IllegalStateException("The item stack is already marked as an opened shulker box: " + shulkerBoxItem);
-        }
         final @NotNull ShulkerBoxInventoryAdapter adapter = new ShulkerBoxInventoryAdapter(player, shulkerBoxItem);
         adapters.set(player, adapter);
         final @NotNull InventoryView openInventory = player.getOpenInventory();
@@ -167,8 +164,9 @@ public class ShulkerBoxInventoryAdapter {
     }
 
     private void acceptInventoryUpdate() {
+        findNewItemStackFromInventory();
         if (!isOpening(itemStack)) {
-            throw new IllegalStateException("The item stack is not marked as an opened shulker box: " + this);
+            return;
         }
         ItemStacks.editItemMeta(itemStack,
                 itemMeta -> BlockSetMetas.editBlockState((BlockStateMeta)itemMeta,
@@ -181,6 +179,23 @@ public class ShulkerBoxInventoryAdapter {
      */
     private void findNewItemStack(@NotNull Stream<@Nullable ItemStack> items) {
         items.filter(this::isOpening).findFirst().ifPresent(newItem -> this.itemStack = newItem);
+    }
+
+    private void findNewItemStackFromInventory() {
+        if (isOpening(this.itemStack)) {
+            return;
+        }
+        final @Nullable ItemStack cursor = opener.getOpenInventory().getCursor();
+        if (isOpening(cursor)) {
+            this.itemStack = cursor;
+            return;
+        }
+        for (@Nullable ItemStack candidate : opener.getInventory()) {
+            if (isOpening(candidate)) {
+                this.itemStack = candidate;
+                return;
+            }
+        }
     }
 
     private @NotNull Inventory getInventoryOfItemStack() {
@@ -196,7 +211,7 @@ public class ShulkerBoxInventoryAdapter {
 
     @Contract("null -> false")
     private boolean isOpening(@Nullable ItemStack itemStack) {
-        if (itemStack == null || !itemStack.hasItemMeta()) {
+        if (!ItemStacks.isShulkerBox(itemStack) || !Objects.requireNonNull(itemStack).hasItemMeta()) {
             return false;
         }
         final @Nullable UUID result = Objects.requireNonNull(itemStack.getItemMeta()).getPersistentDataContainer()
