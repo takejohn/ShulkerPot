@@ -1,9 +1,9 @@
 package jp.takejohn.shulkerpot.bukkit;
 
 import jp.takejohn.shulkerpot.bukkit.inventory.meta.BlockSetMetas;
-import jp.takejohn.shulkerpot.bukkit.persistence.BooleanPersistentDataType;
 import jp.takejohn.shulkerpot.bukkit.inventory.ItemStacks;
 import jp.takejohn.shulkerpot.bukkit.entity.PlayerSpecific;
+import jp.takejohn.shulkerpot.bukkit.persistence.UUIDPersistentDataType;
 import jp.takejohn.shulkerpot.java.util.RunnableOnce;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -26,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 public class ShulkerBoxInventoryAdapter {
@@ -67,7 +68,7 @@ public class ShulkerBoxInventoryAdapter {
             if (adapter != null) {
                 final @NotNull ItemStack itemDrop = event.getItemDrop().getItemStack();
                 adapter.findNewItemStack(Stream.of(itemDrop));
-                if (isItemOpened(itemDrop)) {
+                if (adapter.isOpening(itemDrop)) {
                     Bukkit.getScheduler().runTask(ShulkerPot.getPlugin(), adapter::close);
                 }
             }
@@ -102,15 +103,17 @@ public class ShulkerBoxInventoryAdapter {
 
     private static final PlayerSpecific<ShulkerBoxInventoryAdapter> adapters = new PlayerSpecific<>();
 
-    private static final NamespacedKey KEY = new NamespacedKey(ShulkerPot.getPlugin(), "opened");
+    private static final NamespacedKey KEY = new NamespacedKey(ShulkerPot.getPlugin(), "adapter_id");
 
-    private static final BooleanPersistentDataType DATA_TYPE = new BooleanPersistentDataType();
+    private static final UUIDPersistentDataType DATA_TYPE = new UUIDPersistentDataType();
 
     private final @NotNull Player opener;
 
     private @NotNull ItemStack itemStack;
 
     private final @NotNull Inventory inventory;
+
+    private final @NotNull UUID id = UUID.randomUUID();
 
     private ShulkerBoxInventoryAdapter(@NotNull Player opener, @NotNull ItemStack shulkerBoxItem) {
         Objects.requireNonNull(opener);
@@ -121,7 +124,7 @@ public class ShulkerBoxInventoryAdapter {
         initializer.runOnce();
         this.opener = opener;
         this.itemStack = shulkerBoxItem;
-        setItemOpened(shulkerBoxItem, true);
+        setItemOpened(shulkerBoxItem);
         inventory = getInventoryOfItemStack();
     }
 
@@ -132,7 +135,7 @@ public class ShulkerBoxInventoryAdapter {
      * @param shulkerBoxItem The shulker box as an item
      */
     public static void open(@NotNull Player player, @NotNull ItemStack shulkerBoxItem) {
-        if (isItemOpened(shulkerBoxItem)) {
+        if (Objects.requireNonNull(shulkerBoxItem.getItemMeta()).getPersistentDataContainer().get(KEY, DATA_TYPE) != null) {
             throw new IllegalStateException("The item stack is already marked as an opened shulker box: " + shulkerBoxItem);
         }
         final @NotNull ShulkerBoxInventoryAdapter adapter = new ShulkerBoxInventoryAdapter(player, shulkerBoxItem);
@@ -150,7 +153,7 @@ public class ShulkerBoxInventoryAdapter {
 
     private void onClose() {
         acceptInventoryUpdate();
-        setItemOpened(itemStack, false);
+        setItemClosed(itemStack);
         final @NotNull InventoryView openInventory = opener.getOpenInventory();
         final @Nullable ItemStack cursor = openInventory.getCursor();
         if (cursor == null) {
@@ -165,7 +168,7 @@ public class ShulkerBoxInventoryAdapter {
     }
 
     private void acceptInventoryUpdate() {
-        if (!isItemOpened(itemStack)) {
+        if (!isOpening(itemStack)) {
             throw new IllegalStateException("The item stack is not marked as an opened shulker box: " + this);
         }
         ItemStacks.editItemMeta(itemStack,
@@ -178,7 +181,7 @@ public class ShulkerBoxInventoryAdapter {
      * @param items The {@link Stream} of items to find the shulker box.
      */
     private void findNewItemStack(@NotNull Stream<@Nullable ItemStack> items) {
-        items.filter(ShulkerBoxInventoryAdapter::isItemOpened).findFirst().ifPresent(newItem -> this.itemStack = newItem);
+        items.filter(this::isOpening).findFirst().ifPresent(newItem -> this.itemStack = newItem);
     }
 
     private @NotNull Inventory getInventoryOfItemStack() {
@@ -193,20 +196,24 @@ public class ShulkerBoxInventoryAdapter {
     }
 
     @Contract("null -> false")
-    private static boolean isItemOpened(@Nullable ItemStack itemStack) {
+    private boolean isOpening(@Nullable ItemStack itemStack) {
         if (itemStack == null || !itemStack.hasItemMeta()) {
             return false;
         }
-        final @Nullable Boolean result = Objects.requireNonNull(itemStack.getItemMeta()).getPersistentDataContainer()
+        final @Nullable UUID result = Objects.requireNonNull(itemStack.getItemMeta()).getPersistentDataContainer()
                 .get(KEY, DATA_TYPE);
         if (result == null) {
             return false;
         }
-        return result;
+        return result.equals(this.id);
     }
 
-    private static void setItemOpened(@NotNull ItemStack itemStack, boolean opened) {
-        ItemStacks.editItemMeta(itemStack, itemMeta -> itemMeta.getPersistentDataContainer().set(KEY, DATA_TYPE, opened));
+    private void setItemOpened(@NotNull ItemStack itemStack) {
+        ItemStacks.editItemMeta(itemStack, itemMeta -> itemMeta.getPersistentDataContainer().set(KEY, DATA_TYPE, id));
+    }
+
+    private void setItemClosed(@NotNull ItemStack itemStack) {
+        ItemStacks.editItemMeta(itemStack, itemMeta -> itemMeta.getPersistentDataContainer().remove(KEY));
     }
 
 }
