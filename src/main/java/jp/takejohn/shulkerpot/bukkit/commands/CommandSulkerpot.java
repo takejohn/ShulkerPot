@@ -2,6 +2,8 @@ package jp.takejohn.shulkerpot.bukkit.commands;
 
 import jp.takejohn.shulkerpot.bukkit.ShulkerPot;
 import jp.takejohn.shulkerpot.bukkit.entity.HumanEntities;
+import jp.takejohn.shulkerpot.bukkit.entity.Players;
+import jp.takejohn.shulkerpot.bukkit.resources.LocaleSpecificStrings;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -9,13 +11,14 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
+import java.util.Locale;
 
 public class CommandSulkerpot implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player) || HumanEntities.isOpeningExternalInventory(player)) {
-            sender.sendMessage("Only players can execute this command");
+            sender.sendMessage(LocaleSpecificStrings.get("command.main.error_not_player"));
             return false;
         }
         if (args.length == 0) {
@@ -40,11 +43,9 @@ public class CommandSulkerpot implements CommandExecutor {
 
     private void sendInformingMessage(@NotNull Player player) {
         final boolean enabled = ShulkerPot.getPlugin().getUtilizingConfig().get(player);
-        if (enabled) {
-            player.sendMessage("ShulkerPot is enabled for you.");
-        } else {
-            player.sendMessage("ShulkerPot is disabled for you.");
-        }
+        final @NotNull Locale locale = Players.getLocale(player);
+        final @NotNull String state = LocaleSpecificStrings.get(locale, enabled ? "command.main.enabled" : "command.main.disabled");
+        player.sendMessage(LocaleSpecificStrings.format(locale, "command.main.pattern", ShulkerPot.getPlugin().getName(), state));
     }
 
 }
