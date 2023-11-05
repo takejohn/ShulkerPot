@@ -1,10 +1,13 @@
 package jp.takejohn.shulkerpot.bukkit;
 
-import jp.takejohn.shulkerpot.bukkit.commands.CommandSopen;
-import jp.takejohn.shulkerpot.bukkit.commands.CommandSulkerpot;
-import jp.takejohn.shulkerpot.bukkit.entity.PlayerSpecific;
+import jp.takejohn.shulkerpot.bukkit.command.CommandShulkerpot;
+import jp.takejohn.shulkerpot.bukkit.command.ShulkerpotTabCompleter;
+import jp.takejohn.shulkerpot.bukkit.config.PlayerConfig;
+import jp.takejohn.shulkerpot.bukkit.config.VolatilePlayerConfig;
+import jp.takejohn.shulkerpot.bukkit.entity.PlayerSpecificConstant;
 import jp.takejohn.shulkerpot.bukkit.resources.ResourceBundleControl;
 import org.bukkit.Bukkit;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -17,22 +20,25 @@ public final class ShulkerPot extends JavaPlugin {
 
     private static final @NotNull String BASE_RESOURCE_BUNDLE_NAME = "lang";
 
-    private PlayerSpecific<@NotNull Boolean> utilizingConfig;
+    public static final @NotNull String MAIN_COMMAND_NAME = "shulkerpot";
+
+    private PlayerSpecificConstant<@NotNull PlayerConfig> playerSpecificConfig;
 
     private final @NotNull ResourceBundle.Control resourceBundleControl = new ResourceBundleControl(this);
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        utilizingConfig = PlayerSpecific.withInitial(player -> getConfig().getBoolean("shulkerpot.default"));
+        playerSpecificConfig = PlayerSpecificConstant.withInitial(VolatilePlayerConfig::new);
         final PluginManager pluginManager = Bukkit.getPluginManager();
         pluginManager.registerEvents(new InventoryClickListener(), this);
-        Objects.requireNonNull(getCommand("shulkerpot")).setExecutor(new CommandSulkerpot());
-        Objects.requireNonNull(getCommand("sopen")).setExecutor(new CommandSopen());
+        final @NotNull PluginCommand mainCommand = Objects.requireNonNull(getCommand(MAIN_COMMAND_NAME));
+        mainCommand.setExecutor(new CommandShulkerpot());
+        mainCommand.setTabCompleter(new ShulkerpotTabCompleter());
     }
 
-    public PlayerSpecific<Boolean> getUtilizingConfig() {
-        return utilizingConfig;
+    public PlayerSpecificConstant<@NotNull PlayerConfig> getPlayerSpecificConfig() {
+        return playerSpecificConfig;
     }
 
     public @NotNull ResourceBundle getResourceBundle() {

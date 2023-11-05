@@ -2,6 +2,21 @@
 
 shulkerpot:
 
-  # When this is set to true, a player can open a shulker box by simply clicking it in their inventory.
-  # Setting this to false makes players need to execute "/shulkerpot on" to use this function.
-  default: true
+  # Default configurations for player.
+  # Each player can change the settings through "/shulkerpot" command.
+  default:
+
+    # When this is set to true, a player can open a shulker box by simply clicking it in their inventory.
+    # Setting this to false makes players need to execute "/shulkerpot on" to use this function.
+    enable: true
+
+    # Configurations set through "/shulkerpot clickTypes".
+    clickTypes:
+      left: true
+      shiftLeft: true
+      right: true
+      shiftRight: true
+      doubleClick: true
+      drop: true
+      controlDrop: true
+      swapOffhand: true

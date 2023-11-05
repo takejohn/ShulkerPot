@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Locale;
 
 public final class LocaleSpecificStrings {
@@ -23,6 +24,20 @@ public final class LocaleSpecificStrings {
 
     public static @NotNull String format(@NotNull Locale locale, @NotNull String key, @Nullable Object... args) {
         return MessageFormat.format(get(locale, key), args);
+    }
+
+    public static @NotNull String join(@NotNull Locale locale, @NotNull Collection<? extends @NotNull CharSequence> args) {
+        if (args.isEmpty()) {
+            return get(locale, "terms.none");
+        }
+        return String.join(get(locale, "terms.delimiter"), args);
+    }
+
+    public static @NotNull String join(@NotNull Locale locale, @NotNull CharSequence @NotNull... args) {
+        if (args.length == 0) {
+            return get(locale, "terms.none");
+        }
+        return String.join(get(locale, "terms.delimiter"), args);
     }
 
 }
