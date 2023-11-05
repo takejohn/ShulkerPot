@@ -10,6 +10,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -38,7 +39,7 @@ public class ShulkerBoxInventoryAdapter {
             final @Nullable ShulkerBoxInventoryAdapter adapter = getAdapter(event.getWhoClicked());
             if (adapter != null) {
                 adapter.findNewItemStack(Stream.of(event.getCurrentItem(), event.getCursor()));
-                adapter.acceptInventoryUpdate();
+                acceptInventoryUpdateElseClose(event, adapter);
             }
         }
 
@@ -48,7 +49,7 @@ public class ShulkerBoxInventoryAdapter {
             if (adapter != null) {
                 adapter.findNewItemStack(Stream.concat(Stream.of(event.getOldCursor(), event.getCursor()),
                         event.getNewItems().values().stream()));
-                adapter.acceptInventoryUpdate();
+                acceptInventoryUpdateElseClose(event, adapter);
             }
         }
 
@@ -88,6 +89,14 @@ public class ShulkerBoxInventoryAdapter {
                 return null;
             }
             return adapters.get(player);
+        }
+
+        private static void acceptInventoryUpdateElseClose(@NotNull Cancellable event,
+                                                           @NotNull ShulkerBoxInventoryAdapter adapter) {
+            if (!adapter.acceptInventoryUpdate()) {
+                event.setCancelled(true);
+                Bukkit.getScheduler().runTask(ShulkerPot.getPlugin(), adapter::close);
+            }
         }
 
     };
@@ -163,14 +172,15 @@ public class ShulkerBoxInventoryAdapter {
         adapters.set(opener, null);
     }
 
-    private void acceptInventoryUpdate() {
+    private boolean acceptInventoryUpdate() {
         findNewItemStackFromInventory();
         if (!isOpening(itemStack)) {
-            return;
+            return false;
         }
         ItemStacks.editItemMeta(itemStack,
                 itemMeta -> BlockSetMetas.editBlockState((BlockStateMeta)itemMeta,
                 blockState -> ((ShulkerBox)blockState).getInventory().setContents(inventory.getContents())));
+        return true;
     }
 
     /**
