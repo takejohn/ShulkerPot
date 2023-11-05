@@ -12,9 +12,6 @@ import java.util.List;
 
 public class ShulkerpotTabCompleter implements TabCompleter {
 
-    public static final @NotNull List<@NotNull String> CLICK_TYPES = List.of("left", "shiftLeft", "right", "shiftRight",
-            "doubleClick", "drop", "controlDrop", "swapOffhand");
-
     private static final @NotNull RootArgumentNode ROOT_COMMAND_NODE = new RootArgumentNode();
 
     @Override

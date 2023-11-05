@@ -1,6 +1,6 @@
 package jp.takejohn.shulkerpot.bukkit.command.nodes;
 
-import jp.takejohn.shulkerpot.bukkit.command.ShulkerpotTabCompleter;
+import jp.takejohn.shulkerpot.bukkit.config.ClickTypeKey;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -12,9 +12,9 @@ enum SubcommandNode implements ArgumentNode {
     ON("on"),
     OFF("off"),
     CLICK_TYPES("clickTypes", new TerminalArgumentNode("all"), new TerminalArgumentNode("clear"),
-            new MultipleSelectionNode("set", ShulkerpotTabCompleter.CLICK_TYPES),
-            new MultipleSelectionNode("add", ShulkerpotTabCompleter.CLICK_TYPES),
-            new MultipleSelectionNode("remove", ShulkerpotTabCompleter.CLICK_TYPES));
+            new MultipleSelectionNode("set", ClickTypeKey.names()),
+            new MultipleSelectionNode("add", ClickTypeKey.names()),
+            new MultipleSelectionNode("remove", ClickTypeKey.names()));
 
     private final @NotNull List<@NotNull ArgumentNode> children;
 
