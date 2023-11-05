@@ -5,6 +5,8 @@ import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 public enum ClickTypeKey {
@@ -16,6 +18,8 @@ public enum ClickTypeKey {
     DROP("drop", "terms.click_type.drop"),
     CONTROL_DROP("controlDrop", "terms.click_type.controlDrop"),
     SWAP_OFFHAND("swapOffhand", "terms.click_type.swapOffhand");
+
+    private static final @NotNull List<@NotNull String> names = Arrays.stream(values()).map(ClickTypeKey::getName).toList();
 
     private final @NotNull String name;
 
@@ -60,6 +64,10 @@ public enum ClickTypeKey {
             case SWAP_OFFHAND -> SWAP_OFFHAND;
             default -> null;
         };
+    }
+
+    public static @NotNull List<@NotNull String> names() {
+        return names;
     }
 
 }
